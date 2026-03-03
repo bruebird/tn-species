@@ -1,0 +1,198 @@
+.species-explorer {
+  font-family: "Source Sans", sans-serif;
+  background-color: #ffffff;
+  padding: 0;
+  margin: 0;
+}
+
+.species-explorer #map-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem auto;
+}
+
+.species-explorer #map-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.species-explorer .county-tooltip {
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #aaa;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.species-explorer .svg-county:hover {
+  fill: #cccccc !important;
+  cursor: pointer;
+}
+
+.species-explorer .svg-county.selected {
+  fill: #0c4d1a !important;
+}
+
+.species-explorer .filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+}
+
+.species-explorer .filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.species-explorer .filter-btn:hover {
+  transform: scale(1.05);
+}
+
+.species-explorer .filter-btn img {
+  width: 60px;
+  height: 60px;
+}
+
+.species-explorer .filter-btn.active {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+.species-explorer .filter-label {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.species-explorer .controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  margin: 1rem auto -0.5rem;
+  max-width: 900px;
+}
+
+.species-explorer .controls-bar input[type="text"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 200px;
+  max-width: 90%;
+}
+
+.species-explorer .controls-bar label {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.species-explorer .controls-bar button {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  background-color: #ddd;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.species-explorer #resultsCount {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 1rem;
+}
+
+.species-explorer .card-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.species-explorer .species-card {
+  position: relative;
+  width: 300px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  text-align: left;
+}
+
+.species-explorer .species-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.species-explorer .species-card h3 {
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.species-explorer .species-card p {
+  font-size: 0.85rem;
+  color: #333;
+  margin: 0.25rem 0;
+}
+
+.species-explorer .rank-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background-color: #0c4d1a;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 0.4rem 0.6rem;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.species-explorer #paginationControls {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.species-explorer #paginationControls button {
+  padding: 8px 16px;
+  margin: 0 12px;
+}
+
+@media (max-width: 600px) {
+  .species-explorer .filter-btn img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .species-explorer .filter-label {
+    font-size: 0.75rem;
+  }
+
+  .species-explorer .species-card {
+    width: 90%;
+  }
+
+  .species-explorer .controls-bar {
+    flex-direction: column;
+  }
+}

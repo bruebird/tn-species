@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tennessee Species Explorer</title>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="species-explorer">
+      <div id="map-container"></div>
+      <div id="tooltip" class="county-tooltip"></div>
+      <div class="filter-bar" id="filterBar"></div>
+
+      <div class="controls-bar">
+        <input type="text" id="searchInput" placeholder="Search species..." />
+        <label><input type="checkbox" id="endangeredOnly" /> Show only endangered species</label>
+        <button id="clearFiltersBtn">Clear Filters</button>
+      </div>
+
+      <div id="resultsCount">Showing 0 species</div>
+
+      <div class="card-container" id="cardContainer"></div>
+
+      <div id="paginationControls">
+        <button id="prevPageBtn" type="button">Previous</button>
+        <span id="pageIndicator"></span>
+        <button id="nextPageBtn" type="button">Next</button>
+      </div>
+    </div>
+
+    <script src="scripts/app.js"></script>
+  </body>
+</html>
