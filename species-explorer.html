@@ -1,0 +1,529 @@
+<style>
+  /* Scope styles so we don't stomp on the whole site */
+  .species-explorer {
+    font-family: "Source Sans", sans-serif;
+    background-color: #ffffff;
+    padding: 0;
+    margin: 0;
+  }
+
+  .species-explorer #map-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 1rem auto;
+  }
+
+  /* Important: make sure the inline SVG is visible */
+  .species-explorer #map-container svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .species-explorer .county-tooltip {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #aaa;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .species-explorer .svg-county:hover {
+    fill: #cccccc !important;
+    cursor: pointer;
+  }
+
+  .species-explorer .svg-county.selected {
+    fill: #0c4d1a !important;
+  }
+
+  .species-explorer .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #ffffff;
+  }
+
+  .species-explorer .filter-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .species-explorer .filter-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .species-explorer .filter-btn img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .species-explorer .filter-btn.active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
+  }
+
+  .species-explorer .filter-label {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .species-explorer .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;
+    margin: 1rem auto -0.5rem;
+    max-width: 900px;
+  }
+
+  .species-explorer .controls-bar input[type="text"] {
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: 200px;
+    max-width: 90%;
+  }
+
+  .species-explorer .controls-bar label {
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .species-explorer .controls-bar button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .species-explorer #resultsCount {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 1rem;
+  }
+
+  .species-explorer .card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .species-explorer .species-card {
+    position: relative;
+    width: 300px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .species-explorer .species-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .species-explorer .species-card h3 {
+    font-size: 1.1rem;
+    margin: 0.5rem 0 0.25rem 0;
+  }
+
+  .species-explorer .species-card p {
+    font-size: 0.85rem;
+    color: #333;
+    margin: 0.25rem 0;
+  }
+
+  .species-explorer .rank-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background-color: #0c4d1a;
+    color: white;
+    font-weight: bold;
+    padding: 0.4rem 0.6rem;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+
+  .species-explorer #paginationControls {
+    text-align: center;
+    margin: 2rem 0;
+  }
+
+  .species-explorer #paginationControls button {
+    padding: 8px 16px;
+    margin: 0 12px;
+  }
+
+  @media (max-width: 600px) {
+    .species-explorer .filter-btn img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .species-explorer .filter-label {
+      font-size: 0.75rem;
+    }
+
+    .species-explorer .species-card {
+      width: 90%;
+    }
+
+    .species-explorer .controls-bar {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<div class="species-explorer">
+  <div id="map-container"></div>
+  <div id="tooltip" class="county-tooltip"></div>
+  <div class="filter-bar" id="filterBar"></div>
+
+  <div class="controls-bar">
+    <input type="text" id="searchInput" placeholder="Search species..." />
+    <label><input type="checkbox" id="endangeredOnly"> ⚠️ Show only endangered species</label>
+    <button id="clearFiltersBtn">Clear Filters</button>
+  </div>
+
+  <div id="resultsCount">Showing 0 species</div>
+
+  <div class="card-container" id="cardContainer"></div>
+
+  <div id="paginationControls">
+    <button id="prevPageBtn">← Previous</button>
+    <span id="pageIndicator"></span>
+    <button id="nextPageBtn">Next →</button>
+  </div>
+</div>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const selectedGroups = new Set(JSON.parse(localStorage.getItem("selectedGroups") || "[]"));
+    const selectedCounties = new Set(JSON.parse(localStorage.getItem("selectedCounties") || "[]"));
+    const searchInput = document.getElementById("searchInput");
+    const endangeredCheckbox = document.getElementById("endangeredOnly");
+    const tooltip = document.getElementById("tooltip");
+    const jsonURL = 'https://raw.githubusercontent.com/annelisemucci/tn-species/main/species_by_county.json';
+
+    const icons = {
+      "Mammals": "Mammals.svg",
+      "Birds": "Birds.svg",
+      "Fish": "Fish.svg",
+      "Reptiles & Amphibians": "Reptiles%20%26%20Amphibians.svg",
+      "Insects": "Insects.svg",
+      "Mollusks & Crustaceans": "Mollusks%20%26%20Crustaceans.svg",
+      "Plants": "Plants.svg",
+      "Lichens & Fungi": "Lichens%20%26%20Fungi.svg"
+    };
+
+    let allSpeciesData = [];
+    let allCards = [];
+    let currentPage = 1;
+    const cardsPerPage = 9;
+
+    function saveFilters() {
+      localStorage.setItem("selectedGroups", JSON.stringify([...selectedGroups]));
+      localStorage.setItem("selectedCounties", JSON.stringify([...selectedCounties]));
+      localStorage.setItem("searchQuery", searchInput.value);
+      localStorage.setItem("endangeredOnly", endangeredCheckbox.checked);
+    }
+
+    function applySavedFilters() {
+      searchInput.value = localStorage.getItem("searchQuery") || "";
+      endangeredCheckbox.checked = localStorage.getItem("endangeredOnly") === "true";
+    }
+
+    function clearAllFilters() {
+      selectedGroups.clear();
+      selectedCounties.clear();
+      searchInput.value = "";
+      endangeredCheckbox.checked = false;
+      localStorage.clear();
+      currentPage = 1;
+      renderCards(allSpeciesData);
+      document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".svg-county").forEach(el => el.classList.remove("selected"));
+    }
+
+    function renderPage() {
+      const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start = (currentPage - 1) * cardsPerPage;
+      const end = start + cardsPerPage;
+
+      allCards.forEach((card, index) => {
+        card.style.display = (index >= start && index < end) ? "block" : "none";
+      });
+
+      const pageIndicator = document.getElementById("pageIndicator");
+      pageIndicator.textContent =
+        allCards.length === 0 ? "No results" : `Page ${currentPage} of ${totalPages}`;
+
+      document.getElementById("prevPageBtn").disabled = currentPage === 1 || allCards.length === 0;
+      document.getElementById("nextPageBtn").disabled = currentPage === totalPages || allCards.length === 0;
+    }
+    const inatPhotoCache = new Map();
+
+async function fetchInatPhotoUrl(sciName) {
+  if (!sciName) return null;
+  const key = sciName.toString().trim().toLowerCase();
+  if (!key) return null;
+
+  // simple in-browser cache
+  if (inatPhotoCache.has(key)) return inatPhotoCache.get(key);
+
+  try {
+    const url =
+      `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(key)}` +
+      `&rank=species&is_active=true&per_page=1`;
+
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      inatPhotoCache.set(key, null);
+      return null;
+    }
+
+    const data = await resp.json();
+    const taxon = data && data.results && data.results[0];
+    const photo = taxon && taxon.default_photo;
+    const photoUrl = photo && (photo.medium_url || photo.url || photo.square_url || null);
+
+    inatPhotoCache.set(key, photoUrl || null);
+    return photoUrl || null;
+  } catch (e) {
+    console.error("iNat fetch failed for", sciName, e);
+    inatPhotoCache.set(key, null);
+    return null;
+  }
+}
+
+async function loadInatImages() {
+  const divs = document.querySelectorAll(".species-img");
+
+  for (const div of divs) {
+    const sciName = div.getAttribute("data-sciname");
+    if (!sciName) {
+      div.textContent = "";
+      continue;
+    }
+
+    const url = await fetchInatPhotoUrl(sciName);
+    if (url) {
+      div.innerHTML =
+        `<img src="${url}" alt="${sciName}" style="width:100%; border-radius:4px;">`;
+    } else {
+      // Either no taxon, no default photo, or API failed.
+      // Up to you: show nothing, or a text placeholder.
+      div.textContent = "";
+      // or: div.textContent = "No photo available";
+    }
+  }
+}
+
+    function renderCards(data) {
+      const cardContainer = document.getElementById("cardContainer");
+      cardContainer.innerHTML = "";
+      allCards = [];
+
+      let filtered = data;
+
+      if (selectedGroups.size > 0) {
+        filtered = filtered.filter(d => selectedGroups.has(d["Species Group"]));
+      }
+
+      if (selectedCounties.size > 0) {
+        filtered = filtered.filter(d =>
+          [...selectedCounties].some(c => d["Counties"]?.includes(c))
+        );
+      }
+
+      const searchQuery = searchInput.value.toLowerCase();
+      if (searchQuery) {
+        filtered = filtered.filter(d =>
+          (d["Common Name"] || "").toLowerCase().includes(searchQuery) ||
+          (d["Scientific Name"] || "").toLowerCase().includes(searchQuery)
+        );
+      }
+
+      if (endangeredCheckbox.checked) {
+        filtered = filtered.filter(d => d["U.S. Endangered Species Act Status"] === "Endangered");
+      }
+
+      document.getElementById("resultsCount").textContent =
+        `Showing ${filtered.length} species`;
+
+      filtered.forEach(species => {
+        const card = document.createElement("div");
+        card.className = "species-card";
+        card.setAttribute("data-group", species["Species Group"]);
+
+        const sciName = species["Scientific Name"] || "Unknown";
+        const comName = species["Common Name"] || "Unknown";
+        const speciesf = species["Species Group (Fine)"] || "";
+        const rank = species["Global Rank"] || "";
+        const status = species["U.S. Endangered Species Act Status"] || "";
+        const habitat = species["Habitat"] || "";
+        const counties = species["Counties"] || "";
+        const bmps = species["BMPs"] || "";
+
+        const imageDiv = document.createElement("div");
+        imageDiv.className = "species-img";
+        imageDiv.setAttribute("data-sciname", sciName);
+        imageDiv.textContent = "Loading image...";
+        card.appendChild(imageDiv);
+
+        let statusHTML = "";
+        if (status === "Endangered") {
+          statusHTML = `<p title="Status determined by the U.S. Endangered Species Act, published by NatureServe."><strong>⚠️ <span style='color:red;'>${status}</span></strong></p>`;
+        } else if (status) {
+          statusHTML = `<p title="Status determined by the U.S. Endangered Species Act, published by NatureServe.">⚠️ <span>${status}</span></p>`;
+        }
+
+        card.innerHTML += `
+          <div class="rank-badge">${rank}</div>
+          <h3>${comName}</h3>
+          <p><em>${sciName}</em> | ${speciesf}</p>
+          ${statusHTML}
+          ${habitat ? `<p><strong>Habitat:</strong> ${habitat}</p>` : ""}
+          ${counties ? `<p><strong>Counties:</strong> ${counties}</p>` : ""}
+          ${bmps ? `<p><strong>BMPs:</strong> ${bmps}</p>` : ""}
+        `;
+
+        cardContainer.appendChild(card);
+        allCards.push(card);
+      });
+
+      currentPage = 1;
+      renderPage();
+      loadInatImages();
+      saveFilters();
+    }
+
+    // Load species data
+    fetch(jsonURL)
+      .then(res => res.json())
+      .then(data => {
+        allSpeciesData = data;
+        const groups = [...new Set(data.map(d => d["Species Group"]))];
+        const filterBar = document.getElementById("filterBar");
+
+        groups.forEach(group => {
+          if (!group) return;
+          const btn = document.createElement("button");
+          btn.className = "filter-btn";
+          btn.setAttribute("data-group", group);
+          btn.innerHTML = `
+            <img src="https://raw.githubusercontent.com/annelisemucci/tn-species/main/${icons[group] || 'Mammals.svg'}" alt="${group}" />
+            <div class="filter-label">${group.includes("&") ? group.replace(" & ", "<br>& ") : group}</div>
+          `;
+          if (selectedGroups.has(group)) btn.classList.add("active");
+
+          btn.addEventListener("click", () => {
+            const g = btn.getAttribute("data-group");
+            btn.classList.toggle("active");
+            selectedGroups.has(g) ? selectedGroups.delete(g) : selectedGroups.add(g);
+            currentPage = 1;
+            renderCards(allSpeciesData);
+          });
+
+          filterBar.appendChild(btn);
+        });
+
+        applySavedFilters();
+        renderCards(data);
+      });
+
+    document.getElementById("clearFiltersBtn").addEventListener("click", clearAllFilters);
+
+    searchInput.addEventListener("input", () => {
+      currentPage = 1;
+      renderCards(allSpeciesData);
+    });
+
+    endangeredCheckbox.addEventListener("change", () => {
+      currentPage = 1;
+      renderCards(allSpeciesData);
+    });
+
+    document.getElementById("prevPageBtn").addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+      }
+    });
+
+    document.getElementById("nextPageBtn").addEventListener("click", () => {
+      const totalPages = Math.ceil(allCards.length / cardsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPage();
+      }
+    });
+
+    // Load SVG map
+    fetch("https://raw.githubusercontent.com/annelisemucci/tn-species/main/Tennessee_county_map.svg")
+      .then(res => res.text())
+      .then(svgText => {
+        document.getElementById("map-container").innerHTML = svgText;
+        const svg = document.querySelector("#map-container svg");
+        if (!svg) return;
+
+        svg.querySelectorAll("path").forEach(el => {
+          const name = el.getAttribute("id") || el.getAttribute("data-name");
+          if (!name) return;
+
+          el.classList.add("svg-county");
+          if (selectedCounties.has(name)) el.classList.add("selected");
+
+          el.addEventListener("mouseover", () => {
+            tooltip.style.display = "block";
+            tooltip.textContent = name;
+          });
+
+          el.addEventListener("mousemove", e => {
+            tooltip.style.left = e.pageX + 10 + "px";
+            tooltip.style.top = e.pageY + 10 + "px";
+          });
+
+          el.addEventListener("mouseout", () => {
+            tooltip.style.display = "none";
+          });
+
+          el.addEventListener("click", () => {
+            selectedCounties.has(name) ? selectedCounties.delete(name) : selectedCounties.add(name);
+            el.classList.toggle("selected");
+            currentPage = 1;
+            renderCards(allSpeciesData);
+          });
+        });
+      });
+  });
+</script>
