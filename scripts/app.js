@@ -542,8 +542,8 @@ window.addEventListener("DOMContentLoaded", () => {
         });
 
         el.addEventListener("mousemove", (event) => {
-          tooltip.style.left = `${event.pageX + 10}px`;
-          tooltip.style.top = `${event.pageY + 10}px`;
+          tooltip.style.left = `${event.clientX + 12}px`;
+          tooltip.style.top = `${event.clientY + 12}px`;
         });
 
         el.addEventListener("mouseout", () => {

@@ -334,7 +334,7 @@
 }
 
 .species-explorer .county-tooltip {
-  position: absolute;
+  position: fixed;
   background-color: #ffffff;
   border: 1px solid #aaa;
   padding: 4px 8px;
@@ -343,6 +343,7 @@
   display: none;
   z-index: 10;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
 }
 
 .species-explorer .svg-county:hover {
