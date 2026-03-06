@@ -5,6 +5,10 @@
   font-display: swap;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .species-explorer {
   font-family: "Source Sans", sans-serif;
   background-color: #ffffff;
@@ -689,6 +693,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .species-explorer .portal-top-row,
   .species-explorer .portal-main-row,
   .species-explorer .portal-divider,
