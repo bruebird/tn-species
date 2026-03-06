@@ -12,6 +12,35 @@
   margin: 0;
 }
 
+@keyframes lift-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.species-explorer .portal-top-row,
+.species-explorer .portal-main-row,
+.species-explorer .portal-divider,
+.species-explorer .portal-info-row,
+.species-explorer .search-area-frame,
+.species-explorer .resource-strip-section {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: lift-fade-in 850ms ease-out forwards;
+}
+
+.species-explorer .portal-top-row { animation-delay: 60ms; }
+.species-explorer .portal-main-row { animation-delay: 140ms; }
+.species-explorer .portal-divider { animation-delay: 220ms; }
+.species-explorer .portal-info-row { animation-delay: 300ms; }
+.species-explorer .search-area-frame { animation-delay: 380ms; }
+.species-explorer .resource-strip-section { animation-delay: 460ms; }
+
 .species-explorer .portal-header {
   width: 100%;
   margin: 0;
@@ -143,6 +172,19 @@
   color: #454545;
 }
 
+.species-explorer .portal-jump-link {
+  display: inline-block;
+  margin-left: 0.3rem;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.species-explorer .portal-jump-link:hover,
+.species-explorer .portal-jump-link:focus-visible {
+  text-decoration: underline;
+}
+
 .species-explorer .portal-info-icon-col {
   display: flex;
   align-items: flex-start;
@@ -201,6 +243,7 @@
   padding: 0.85rem;
   display: flex;
   flex-direction: column;
+  animation: lift-fade-in 700ms ease-out both;
 }
 
 .species-explorer .resource-logo {
@@ -208,24 +251,24 @@
   height: 86px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 0.55rem;
 }
 
 .species-explorer .resource-logo img {
-  max-height: 86px;
-  max-width: 100%;
-  width: auto;
-  object-fit: contain;
-  background: transparent;
-}
-
-.species-explorer .resource-logo img[src*="TWRA-logo_100x100"] {
-  width: 37px;
-  height: 44px;
+  width: 72px;
+  height: 86px;
   max-width: none;
   max-height: none;
-  mix-blend-mode: screen;
+  object-fit: contain;
+  background: transparent;
+  mix-blend-mode: normal;
+  opacity: 1;
+}
+
+.species-explorer .resource-card[data-platform*="NatureServe"] .resource-logo img {
+  width: 110px;
+  height: 86px;
 }
 
 .species-explorer .resource-logo-fallback {
@@ -468,27 +511,34 @@
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.65rem;
+  animation: lift-fade-in 700ms ease-out both;
+}
+
+.species-explorer .species-card:nth-child(odd),
+.species-explorer .resource-card:nth-child(odd) {
+  animation-delay: 90ms;
 }
 
 .species-explorer .species-card-header {
   display: grid;
-  grid-template-columns: 1fr 112px;
+  grid-template-columns: 1fr 136px;
   align-items: start;
-  gap: 0.6rem;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
 }
 
 .species-explorer .species-img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 10;
   border-radius: 6px;
   overflow: hidden;
   background: #ffffff;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   margin-bottom: 0;
-  margin-top: -2px;
+  margin-top: 0;
   font-size: 0.72rem;
   color: #6a6a6a;
   align-self: start;
@@ -498,10 +548,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
   display: block;
+  border-radius: 6px;
 }
 
-.species-explorer .species-card img {
+.species-explorer .species-card > img {
   width: 100%;
   height: auto;
   border-radius: 4px;
@@ -523,7 +575,7 @@
 }
 
 .species-explorer .species-scientific {
-  margin: 0.22rem 0 0;
+  margin: 0.18rem 0 0;
   font-size: 0.84rem;
   line-height: 1.12;
   font-style: italic;
@@ -531,14 +583,14 @@
 }
 
 .species-explorer .species-group-fine {
-  margin: 0.32rem 0 0;
+  margin: 0.24rem 0 0;
   font-size: 0.7rem;
   line-height: 1.1;
   color: #555;
 }
 
 .species-explorer .species-meta-row {
-  margin-top: 0.48rem;
+  margin-top: 0.4rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.28rem;
@@ -576,7 +628,8 @@
 
 .species-explorer .species-details {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.5rem;
+  margin-top: 0.08rem;
 }
 
 .species-explorer .species-detail-item h4 {
@@ -632,6 +685,21 @@
 .species-explorer #paginationControls button {
   padding: 8px 16px;
   margin: 0 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .species-explorer .portal-top-row,
+  .species-explorer .portal-main-row,
+  .species-explorer .portal-divider,
+  .species-explorer .portal-info-row,
+  .species-explorer .search-area-frame,
+  .species-explorer .resource-strip-section,
+  .species-explorer .species-card,
+  .species-explorer .resource-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 @media (max-width: 1200px) {

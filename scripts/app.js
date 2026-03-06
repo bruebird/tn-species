@@ -23,12 +23,16 @@ window.addEventListener("DOMContentLoaded", () => {
     "Lichens & Fungi": "assets/icons/lichens-fungi.svg",
   };
   const resourceLinks = {
-    "NatureServe Explorer": "https://explorer.natureserve.org/",
-    "USFWS ECOS": "https://ecos.fws.gov/ecp/",
+    TWRA: "https://www.tn.gov/twra.html",
     "Tennessee Wildlife Resources Agency / State Wildlife Action Plan":
-      "https://www.tn.gov/twra/wildlife/state-wildlife-action-plan.html",
-    "ESRI Living Atlas": "https://livingatlas.arcgis.com/en/home/",
+      "https://www.tn.gov/twra.html",
+    "NatureServe Explorer": "https://explorer.natureserve.org/",
+    USFWS: "https://ecos.fws.gov/ecp/",
+    "USFWS ECOS": "https://ecos.fws.gov/ecp/",
+    "Flora Atlas": "https://tennessee-kentucky.plantatlas.usf.edu/",
     "Tennessee-Kentucky Flora Atlas": "https://tennessee-kentucky.plantatlas.usf.edu/",
+    ESRI: "https://livingatlas.arcgis.com/en/home/",
+    "ESRI Living Atlas": "https://livingatlas.arcgis.com/en/home/",
   };
 
   let allSpeciesData = [];
@@ -100,12 +104,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const card = document.createElement("article");
     card.className = "resource-card";
+    card.setAttribute("data-platform", resource.platform || "");
 
     const logoWrap = document.createElement("div");
     logoWrap.className = "resource-logo";
 
     const logoImg = document.createElement("img");
-    logoImg.src = `assets/resources/${resource.fileName}`;
+    const logoSource = /^https?:\/\//i.test(resource.fileName)
+      ? resource.fileName
+      : `assets/resources/${resource.fileName}`;
+    logoImg.src = logoSource;
     logoImg.alt = `${resource.platform} logo`;
     logoImg.loading = "lazy";
     logoImg.addEventListener("error", () => {
