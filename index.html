@@ -8,25 +8,89 @@
   </head>
   <body>
     <div class="species-explorer">
-      <div id="map-container"></div>
-      <div id="tooltip" class="county-tooltip"></div>
-      <div class="filter-bar" id="filterBar"></div>
+      <section class="portal-header" aria-label="Rare Species Explorer introduction">
+        <div class="portal-top-row">
+          <img class="portal-logo portal-logo-left" src="assets/header-logos/sfi-logo.png" alt="Sustainable Forestry Initiative Tennessee logo" />
 
-      <div class="controls-bar">
-        <input type="text" id="searchInput" placeholder="Search species..." />
-        <label><input type="checkbox" id="endangeredOnly" /> Show only endangered species</label>
-        <button id="clearFiltersBtn">Clear Filters</button>
-      </div>
+          <div class="portal-icon-row" aria-label="Species icon row">
+            <span class="portal-icon-badge"><img src="assets/icons/plants.svg" alt="Plants" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/mammals.svg" alt="Mammals" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/lichens-fungi.svg" alt="Lichens and Fungi" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/birds.svg" alt="Birds" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/mollusks-crustaceans.svg" alt="Mollusks and Crustaceans" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/fish.svg" alt="Fish" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/reptiles-amphibians.svg" alt="Reptiles and Amphibians" /></span>
+            <span class="portal-icon-badge"><img src="assets/icons/insects.svg" alt="Insects" /></span>
+          </div>
 
-      <div id="resultsCount">Showing 0 species</div>
+          <img class="portal-logo portal-logo-right" src="assets/header-logos/tfa75-logo.png" alt="Tennessee Forestry Association logo" />
+        </div>
 
-      <div class="card-container" id="cardContainer"></div>
+        <div class="portal-main-row">
+          <div class="portal-main-title">
+            <p class="tennessee-script">Tennessee</p>
+            <h1 class="portal-title">Rare Species Explorer</h1>
+          </div>
+          <p class="portal-main-description">
+            Find rare and endangered species in your area! Take care of our forests by supporting biodiversity.
+            Loggers, landowners, and Tennesseans know what could be on your land and get additional resources.
+          </p>
+        </div>
 
-      <div id="paginationControls">
-        <button id="prevPageBtn" type="button">Previous</button>
-        <span id="pageIndicator"></span>
-        <button id="nextPageBtn" type="button">Next</button>
-      </div>
+        <div class="portal-divider"></div>
+
+        <div class="portal-info-row">
+          <div class="portal-info-icon-col">
+            <span class="portal-search-icon" aria-hidden="true">&#128269;</span>
+          </div>
+          <div class="portal-info-col">
+            <h2>Search by County</h2>
+            <p>Select a county to filter known rare species. Hold down a county to select multiple.</p>
+          </div>
+          <div class="portal-info-col">
+            <h2>Search by Taxonomy</h2>
+            <p>Choose a species group in the filter bar to narrow down your search.</p>
+          </div>
+          <div class="portal-info-col">
+            <h2>Additional resources</h2>
+            <p>Learn more about a species and how you can support beneath the species list.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="search-area-frame" aria-label="Species search area">
+        <div id="map-container"></div>
+        <div id="tooltip" class="county-tooltip"></div>
+        <div class="filter-controls-row">
+          <div class="filter-bar" id="filterBar"></div>
+
+          <div class="controls-bar" id="search-tools">
+            <input type="text" id="searchInput" placeholder="Search species..." />
+            <div class="endangered-filter">
+              <input type="checkbox" id="endangeredOnly" />
+              <label for="endangeredOnly">Show only endangered species</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-summary">
+          <div id="resultsCount">Showing 0 species</div>
+          <button id="clearFiltersBtn">Clear Filters</button>
+        </div>
+
+        <div class="card-container" id="cardContainer"></div>
+
+        <div id="paginationControls">
+          <button id="prevPageBtn" type="button">Previous</button>
+          <span id="pageIndicator"></span>
+          <button id="nextPageBtn" type="button">Next</button>
+        </div>
+      </section>
+
+      <section id="resources-section" class="resource-strip-section resources-standalone" aria-label="Additional biodiversity resources">
+        <h2 class="resource-strip-title">Additional biodiversity resources</h2>
+        <div class="resource-strip" id="resourceStrip"></div>
+      </section>
     </div>
 
     <script src="scripts/app.js"></script>

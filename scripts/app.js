@@ -8,7 +8,9 @@ window.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const endangeredCheckbox = document.getElementById("endangeredOnly");
   const tooltip = document.getElementById("tooltip");
+  const mapModeStatus = document.getElementById("mapModeStatus");
   const jsonURL = "assets/data/species_by_county.json";
+  const resourcesCsvURL = "assets/data/biodiversity_tools_descriptions.csv";
 
   const icons = {
     Mammals: "assets/icons/mammals.svg",
@@ -20,18 +22,162 @@ window.addEventListener("DOMContentLoaded", () => {
     Plants: "assets/icons/plants.svg",
     "Lichens & Fungi": "assets/icons/lichens-fungi.svg",
   };
+  const resourceLinks = {
+    "NatureServe Explorer": "https://explorer.natureserve.org/",
+    "USFWS ECOS": "https://ecos.fws.gov/ecp/",
+    "Tennessee Wildlife Resources Agency / State Wildlife Action Plan":
+      "https://www.tn.gov/twra/wildlife/state-wildlife-action-plan.html",
+    "ESRI Living Atlas": "https://livingatlas.arcgis.com/en/home/",
+    "Tennessee-Kentucky Flora Atlas": "https://tennessee-kentucky.plantatlas.usf.edu/",
+  };
 
   let allSpeciesData = [];
   let allCards = [];
   let currentPage = 1;
   const cardsPerPage = 9;
   const inatPhotoCache = new Map();
+  const holdToMultiMs = 500;
+  let multiSelectMode = false;
+
+  function updateMapModeStatus() {
+    if (!mapModeStatus) return;
+    mapModeStatus.textContent = multiSelectMode
+      ? "Current mode: Multi-select"
+      : "Current mode: Single-select";
+  }
+
+  function setMultiSelectMode(enabled) {
+    multiSelectMode = enabled;
+    updateMapModeStatus();
+  }
 
   function saveFilters() {
     localStorage.setItem("selectedGroups", JSON.stringify([...selectedGroups]));
     localStorage.setItem("selectedCounties", JSON.stringify([...selectedCounties]));
     localStorage.setItem("searchQuery", searchInput.value);
     localStorage.setItem("endangeredOnly", endangeredCheckbox.checked);
+  }
+
+  function parseCsvRow(rowText) {
+    const row = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < rowText.length; i += 1) {
+      const char = rowText[i];
+      const next = rowText[i + 1];
+
+      if (char === "\"") {
+        if (inQuotes && next === "\"") {
+          current += "\"";
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === "," && !inQuotes) {
+        row.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    row.push(current.trim());
+    return row;
+  }
+
+  function toInitials(text) {
+    return text
+      .split(/[^A-Za-z0-9]+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((part) => part[0].toUpperCase())
+      .join("");
+  }
+
+  function renderResourceCard(resource) {
+    const container = document.getElementById("resourceStrip");
+    if (!container) return;
+
+    const card = document.createElement("article");
+    card.className = "resource-card";
+
+    const logoWrap = document.createElement("div");
+    logoWrap.className = "resource-logo";
+
+    const logoImg = document.createElement("img");
+    logoImg.src = `assets/resources/${resource.fileName}`;
+    logoImg.alt = `${resource.platform} logo`;
+    logoImg.loading = "lazy";
+    logoImg.addEventListener("error", () => {
+      logoImg.remove();
+      const fallback = document.createElement("span");
+      fallback.className = "resource-logo-fallback";
+      fallback.textContent = toInitials(resource.platform || "R");
+      logoWrap.appendChild(fallback);
+    });
+
+    logoWrap.appendChild(logoImg);
+
+    const name = document.createElement("h3");
+    name.className = "resource-name";
+    name.textContent = resource.platform;
+
+    const description = document.createElement("p");
+    description.className = "resource-description";
+    description.textContent = resource.description;
+
+    const websiteUrl = resource.url || resourceLinks[resource.platform] || "";
+    if (websiteUrl) {
+      const linkBtn = document.createElement("a");
+      linkBtn.className = "resource-link-btn";
+      linkBtn.href = websiteUrl;
+      linkBtn.target = "_blank";
+      linkBtn.rel = "noopener noreferrer";
+      linkBtn.textContent = "Visit Website";
+      linkBtn.setAttribute("aria-label", `Visit ${resource.platform}`);
+      card.appendChild(linkBtn);
+    }
+
+    card.appendChild(logoWrap);
+    card.appendChild(name);
+    card.appendChild(description);
+    const linkBtn = card.querySelector(".resource-link-btn");
+    if (linkBtn) card.appendChild(linkBtn);
+    container.appendChild(card);
+  }
+
+  function loadResourceStrip() {
+    fetch(resourcesCsvURL)
+      .then((res) => res.text())
+      .then((csvText) => {
+        const lines = csvText
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+        if (lines.length < 2) return;
+
+        const header = parseCsvRow(lines[0]);
+        const platformIdx = header.indexOf("Platform");
+        const fileNameIdx = header.indexOf("FileName");
+        const descriptionIdx = header.indexOf("Description");
+        const urlIdx = header.indexOf("URL");
+        if (platformIdx < 0 || fileNameIdx < 0 || descriptionIdx < 0) return;
+
+        lines.slice(1).forEach((line) => {
+          const row = parseCsvRow(line);
+          const resource = {
+            platform: row[platformIdx] || "",
+            fileName: row[fileNameIdx] || "",
+            description: row[descriptionIdx] || "",
+            url: urlIdx >= 0 ? (row[urlIdx] || "") : "",
+          };
+          if (!resource.platform) return;
+          renderResourceCard(resource);
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to load resource CSV:", error);
+      });
   }
 
   function applySavedFilters() {
@@ -42,6 +188,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function clearAllFilters() {
     selectedGroups.clear();
     selectedCounties.clear();
+    setMultiSelectMode(false);
     searchInput.value = "";
     endangeredCheckbox.checked = false;
     localStorage.clear();
@@ -74,6 +221,8 @@ window.addEventListener("DOMContentLoaded", () => {
       currentPage === 1 || allCards.length === 0;
     document.getElementById("nextPageBtn").disabled =
       currentPage === totalPages || allCards.length === 0;
+
+    loadInatImages();
   }
 
   async function fetchInatPhotoUrl(sciName) {
@@ -109,22 +258,34 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadInatImages() {
-    const divs = document.querySelectorAll(".species-img");
+    const divs = Array.from(document.querySelectorAll(".species-img")).filter(
+      (div) =>
+        div.closest(".species-card")?.style.display !== "none" &&
+        div.getAttribute("data-loaded") !== "true"
+    );
 
-    for (const div of divs) {
+    await Promise.all(divs.map(async (div) => {
       const sciName = div.getAttribute("data-sciname");
       if (!sciName) {
         div.textContent = "";
-        continue;
+        div.setAttribute("data-loaded", "true");
+        return;
       }
 
       const url = await fetchInatPhotoUrl(sciName);
       if (url) {
-        div.innerHTML = `<img src="${url}" alt="${sciName}" style="width:100%; border-radius:4px;">`;
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = sciName;
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.referrerPolicy = "no-referrer";
+        div.replaceChildren(img);
       } else {
         div.textContent = "";
       }
-    }
+      div.setAttribute("data-loaded", "true");
+    }));
   }
 
   function renderCards(data) {
@@ -178,26 +339,103 @@ window.addEventListener("DOMContentLoaded", () => {
       const imageDiv = document.createElement("div");
       imageDiv.className = "species-img";
       imageDiv.setAttribute("data-sciname", sciName);
+      imageDiv.setAttribute("data-loaded", "false");
       imageDiv.textContent = "Loading image...";
-      card.appendChild(imageDiv);
 
-      let statusHTML = "";
-      if (status === "Endangered") {
-        statusHTML =
-          "<p title=\"Status determined by the U.S. Endangered Species Act, published by NatureServe.\"><strong>⚠️ <span style='color:red;'>Endangered</span></strong></p>";
-      } else if (status) {
-        statusHTML = `<p title="Status determined by the U.S. Endangered Species Act, published by NatureServe.">⚠️ <span>${status}</span></p>`;
+      const header = document.createElement("div");
+      header.className = "species-card-header";
+
+      const headingWrap = document.createElement("div");
+      headingWrap.className = "species-headings";
+
+      const nameEl = document.createElement("h3");
+      nameEl.className = "species-name";
+      nameEl.textContent = comName;
+
+      const sciEl = document.createElement("p");
+      sciEl.className = "species-scientific";
+      sciEl.textContent = sciName;
+
+      const groupEl = document.createElement("p");
+      groupEl.className = "species-group-fine";
+      groupEl.textContent = speciesFine || "Species Group (Fine)";
+
+      const metaRow = document.createElement("div");
+      metaRow.className = "species-meta-row";
+      if (rank) {
+        const rankPill = document.createElement("span");
+        rankPill.className = "meta-pill meta-pill-rank";
+        rankPill.textContent = `Global Rank ${rank}`;
+        metaRow.appendChild(rankPill);
+      }
+      if (status) {
+        const statusPill = document.createElement("span");
+        statusPill.className = "meta-pill meta-pill-status";
+        const normalizedStatus = status.trim().toLowerCase();
+        if (normalizedStatus === "under review") {
+          statusPill.classList.add("meta-pill-status-review");
+        } else if (normalizedStatus === "endangered") {
+          statusPill.classList.add("meta-pill-status-endangered");
+        }
+        statusPill.textContent = status;
+        metaRow.appendChild(statusPill);
       }
 
-      card.innerHTML += `
-        <div class="rank-badge">${rank}</div>
-        <h3>${comName}</h3>
-        <p><em>${sciName}</em> | ${speciesFine}</p>
-        ${statusHTML}
-        ${habitat ? `<p><strong>Habitat:</strong> ${habitat}</p>` : ""}
-        ${counties ? `<p><strong>Counties:</strong> ${counties}</p>` : ""}
-        ${bmps ? `<p><strong>BMPs:</strong> ${bmps}</p>` : ""}
-      `;
+      headingWrap.appendChild(nameEl);
+      headingWrap.appendChild(sciEl);
+      headingWrap.appendChild(groupEl);
+      if (metaRow.childElementCount > 0) headingWrap.appendChild(metaRow);
+      header.appendChild(headingWrap);
+      header.appendChild(imageDiv);
+
+      const details = document.createElement("div");
+      details.className = "species-details";
+
+      const detailEntries = [
+        { label: "Habitat", value: habitat },
+        { label: "Counties", value: counties },
+        { label: "BMPs", value: bmps },
+      ].filter((entry) => entry.value);
+
+      detailEntries.forEach((entry) => {
+        const detailItem = document.createElement("section");
+        detailItem.className = "species-detail-item";
+
+        const detailTitle = document.createElement("h4");
+        detailTitle.textContent = entry.label;
+
+        const detailText = document.createElement("p");
+        detailText.className = "species-detail-text";
+        detailText.textContent = entry.value;
+
+        detailItem.appendChild(detailTitle);
+        detailItem.appendChild(detailText);
+
+        if (entry.value.length > 120) {
+          detailText.classList.add("clamped");
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "detail-toggle";
+          toggle.textContent = "More";
+          toggle.addEventListener("click", () => {
+            const expanded = detailText.classList.toggle("expanded");
+            toggle.textContent = expanded ? "Less" : "More";
+          });
+          detailItem.appendChild(toggle);
+        }
+
+        details.appendChild(detailItem);
+      });
+
+      if (detailEntries.length === 0) {
+        const emptyText = document.createElement("p");
+        emptyText.className = "species-empty";
+        emptyText.textContent = "No habitat, county, or BMP details available.";
+        details.appendChild(emptyText);
+      }
+
+      card.appendChild(header);
+      card.appendChild(details);
 
       cardContainer.appendChild(card);
       allCards.push(card);
@@ -205,7 +443,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     currentPage = 1;
     renderPage();
-    loadInatImages();
     saveFilters();
   }
 
@@ -245,6 +482,9 @@ window.addEventListener("DOMContentLoaded", () => {
       renderCards(data);
     });
 
+  loadResourceStrip();
+  updateMapModeStatus();
+
   document.getElementById("clearFiltersBtn").addEventListener("click", clearAllFilters);
 
   searchInput.addEventListener("input", () => {
@@ -282,6 +522,8 @@ window.addEventListener("DOMContentLoaded", () => {
       svg.querySelectorAll("path").forEach((el) => {
         const name = el.getAttribute("id") || el.getAttribute("data-name");
         if (!name) return;
+        let holdTimer = null;
+        let longPressTriggered = false;
 
         el.classList.add("svg-county");
         if (selectedCounties.has(name)) el.classList.add("selected");
@@ -300,9 +542,49 @@ window.addEventListener("DOMContentLoaded", () => {
           tooltip.style.display = "none";
         });
 
+        el.addEventListener("pointerdown", (event) => {
+          if (event.button !== 0) return;
+          longPressTriggered = false;
+          if (holdTimer) clearTimeout(holdTimer);
+          holdTimer = setTimeout(() => {
+            longPressTriggered = true;
+            setMultiSelectMode(!multiSelectMode);
+          }, holdToMultiMs);
+        });
+
+        const clearHoldTimer = () => {
+          if (holdTimer) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+        };
+
+        el.addEventListener("pointerup", clearHoldTimer);
+        el.addEventListener("pointerleave", clearHoldTimer);
+        el.addEventListener("pointercancel", clearHoldTimer);
+
         el.addEventListener("click", () => {
-          selectedCounties.has(name) ? selectedCounties.delete(name) : selectedCounties.add(name);
-          el.classList.toggle("selected");
+          if (longPressTriggered) {
+            longPressTriggered = false;
+            return;
+          }
+
+          if (multiSelectMode) {
+            selectedCounties.has(name) ? selectedCounties.delete(name) : selectedCounties.add(name);
+            el.classList.toggle("selected");
+          } else {
+            const wasOnlySelected = selectedCounties.size === 1 && selectedCounties.has(name);
+            selectedCounties.clear();
+            svg.querySelectorAll(".svg-county.selected").forEach((countyEl) => {
+              countyEl.classList.remove("selected");
+            });
+
+            if (!wasOnlySelected) {
+              selectedCounties.add(name);
+              el.classList.add("selected");
+            }
+          }
+
           currentPage = 1;
           renderCards(allSpeciesData);
         });
