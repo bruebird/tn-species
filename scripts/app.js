@@ -33,6 +33,8 @@ window.addEventListener("DOMContentLoaded", () => {
     "Tennessee-Kentucky Flora Atlas": "https://tennessee-kentucky.plantatlas.usf.edu/",
     ESRI: "https://livingatlas.arcgis.com/en/home/",
     "ESRI Living Atlas": "https://livingatlas.arcgis.com/en/home/",
+    "TN Division of Natural Areas":
+      "https://www.tn.gov/environment/program-areas/na-natural-areas.html",
   };
 
   let allSpeciesData = [];
