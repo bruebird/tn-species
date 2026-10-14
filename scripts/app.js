@@ -10,6 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const tooltip = document.getElementById("tooltip");
   const mapModeStatus = document.getElementById("mapModeStatus");
   const jsonURL = "assets/data/species_by_county.json";
+  const compactCardsQuery = window.matchMedia("(max-width: 600px)");
   const resourcesCsvURL = "assets/data/biodiversity_tools_descriptions.csv";
 
   const icons = {
@@ -398,6 +399,19 @@ window.addEventListener("DOMContentLoaded", () => {
       header.appendChild(headingWrap);
       header.appendChild(imageDiv);
 
+      const expandBtn = document.createElement("button");
+      expandBtn.type = "button";
+      expandBtn.className = "species-expand";
+      expandBtn.setAttribute("aria-expanded", "false");
+      expandBtn.setAttribute("aria-label", `Show details for ${comName}`);
+      header.appendChild(expandBtn);
+
+      header.addEventListener("click", () => {
+        if (!compactCardsQuery.matches) return;
+        const open = card.classList.toggle("is-open");
+        expandBtn.setAttribute("aria-expanded", String(open));
+      });
+
       const details = document.createElement("div");
       details.className = "species-details";
 
@@ -600,4 +614,30 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       });
     });
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  const resourcesCue = document.getElementById("resourcesCue");
+  const portal = document.getElementById("search-area");
+  const resources = document.getElementById("resources-section");
+  if (!resourcesCue || !portal || !resources) return;
+
+  let frameQueued = false;
+  const updateResourcesCue = () => {
+    frameQueued = false;
+    const viewportHeight = window.innerHeight;
+    const inPortal = portal.getBoundingClientRect().top < viewportHeight * 0.5;
+    const resourcesInView = resources.getBoundingClientRect().top < viewportHeight;
+    resourcesCue.classList.toggle("is-visible", inPortal && !resourcesInView);
+  };
+
+  const queueUpdate = () => {
+    if (frameQueued) return;
+    frameQueued = true;
+    requestAnimationFrame(updateResourcesCue);
+  };
+
+  window.addEventListener("scroll", queueUpdate, { passive: true });
+  window.addEventListener("resize", queueUpdate);
+  updateResourcesCue();
 });

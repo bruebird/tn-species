@@ -10,58 +10,55 @@
     <div class="species-explorer">
       <section class="portal-header" aria-label="Rare Species Explorer introduction">
         <div class="portal-top-row">
-          <img class="portal-logo portal-logo-left" src="assets/header-logos/sfi-logo.png" alt="Sustainable Forestry Initiative Tennessee logo" />
-
-          <div class="portal-icon-row" aria-label="Species icon row">
-            <span class="portal-icon-badge"><img src="assets/icons/plants.svg" alt="Plants" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/mammals.svg" alt="Mammals" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/lichens-fungi.svg" alt="Lichens and Fungi" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/birds.svg" alt="Birds" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/mollusks-crustaceans.svg" alt="Mollusks and Crustaceans" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/fish.svg" alt="Fish" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/reptiles-amphibians.svg" alt="Reptiles and Amphibians" /></span>
-            <span class="portal-icon-badge"><img src="assets/icons/insects.svg" alt="Insects" /></span>
-          </div>
-
+          <img class="portal-logo portal-logo-left" src="assets/header-logos/sfi-tennessee-logo.png" alt="Sustainable Forestry Initiative Tennessee logo" />
           <img class="portal-logo portal-logo-right" src="assets/header-logos/tfa75-logo.png" alt="Tennessee Forestry Association logo" />
         </div>
 
-        <div class="portal-main-row">
-          <div class="portal-main-title">
+        <div class="portal-hero">
+          <div class="portal-icon-ring" aria-label="Species groups">
+            <span class="portal-icon-badge" style="--i: 0"><img src="assets/icons/plants.svg" alt="Plants" /></span>
+            <span class="portal-icon-badge" style="--i: 1"><img src="assets/icons/mammals.svg" alt="Mammals" /></span>
+            <span class="portal-icon-badge" style="--i: 2"><img src="assets/icons/lichens-fungi.svg" alt="Lichens and Fungi" /></span>
+            <span class="portal-icon-badge" style="--i: 3"><img src="assets/icons/birds.svg" alt="Birds" /></span>
+            <span class="portal-icon-badge" style="--i: 4"><img src="assets/icons/mollusks-crustaceans.svg" alt="Mollusks and Crustaceans" /></span>
+            <span class="portal-icon-badge" style="--i: 5"><img src="assets/icons/fish.svg" alt="Fish" /></span>
+            <span class="portal-icon-badge" style="--i: 6"><img src="assets/icons/reptiles-amphibians.svg" alt="Reptiles and Amphibians" /></span>
+            <span class="portal-icon-badge" style="--i: 7"><img src="assets/icons/insects.svg" alt="Insects" /></span>
+          </div>
+
+          <div class="portal-hero-text">
             <p class="tennessee-script">Tennessee</p>
             <h1 class="portal-title">Rare Species Explorer</h1>
-          </div>
-          <p class="portal-main-description">
-            <strong>Biodiversity is a critical part of healthy forests</strong> - find G1 &amp; G2 species in
-            your area and support thriving ecosystems in Tennessee.
-          </p>
-        </div>
-
-        <div class="portal-divider"></div>
-
-        <div class="portal-info-row">
-          <div class="portal-info-icon-col">
-            <span class="portal-search-icon" aria-hidden="true">&#128269;</span>
-          </div>
-          <div class="portal-info-col">
-            <h2>Search by County</h2>
-            <p>Select a county to filter known rare species. Hold down a county to select multiple.</p>
-          </div>
-          <div class="portal-info-col">
-            <h2>Search by Taxonomy</h2>
-            <p>Choose a species group in the filter bar to narrow down your search.</p>
-          </div>
-          <div class="portal-info-col">
-            <h2>Additional resources</h2>
-            <p>
-              Find out more about species with more resources.
-              <a class="portal-jump-link" href="#resources-section" aria-label="Jump to additional resources section">↓</a>
+            <p class="portal-main-description">
+              <strong>Biodiversity is a critical part of healthy forests</strong> - find G1 &amp; G2 species in
+              your area and support thriving ecosystems in Tennessee.
             </p>
           </div>
         </div>
+
+        <div class="portal-search-intro">
+          <div class="portal-info-row">
+            <h2 class="portal-info-title">Search by</h2>
+            <div class="portal-info-cols">
+              <div class="portal-info-col">
+                <h3>County</h3>
+                <p>Select a county to filter. Hold down to select multiple.</p>
+              </div>
+              <div class="portal-info-col">
+                <h3>Taxonomy</h3>
+                <p>Choose a species group to narrow down your search.</p>
+              </div>
+            </div>
+          </div>
+
+          <a class="scroll-cue scroll-cue-hero" href="#search-area" aria-label="Scroll down to the species map">
+            <span class="scroll-cue-label">Scroll</span>
+            <svg class="scroll-cue-arrow" viewBox="0 0 20 11" aria-hidden="true"><path d="M1 1l9 9 9-9" /></svg>
+          </a>
+        </div>
       </section>
 
-      <section class="search-area-frame" aria-label="Species search area">
+      <section id="search-area" class="search-area-frame" aria-label="Species search area">
         <div id="map-container"></div>
         <div id="tooltip" class="county-tooltip"></div>
         <div class="filter-controls-row">
@@ -89,6 +86,11 @@
           <button id="nextPageBtn" type="button">Next</button>
         </div>
       </section>
+
+      <a class="scroll-cue scroll-cue-resources" id="resourcesCue" href="#resources-section" aria-label="Scroll down to additional resources">
+        <span class="scroll-cue-label">Resources</span>
+        <svg class="scroll-cue-arrow" viewBox="0 0 20 11" aria-hidden="true"><path d="M1 1l9 9 9-9" /></svg>
+      </a>
 
       <section id="resources-section" class="resource-strip-section resources-standalone" aria-label="Additional biodiversity resources">
         <h2 class="resource-strip-title">Get more support on species in Tennessee</h2>

@@ -9,6 +9,10 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  margin: 0;
+}
+
 .species-explorer {
   font-family: "Source Sans", sans-serif;
   background-color: #ffffff;
@@ -27,10 +31,31 @@ html {
   }
 }
 
+@keyframes scroll-cue-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .species-explorer .portal-top-row,
-.species-explorer .portal-main-row,
-.species-explorer .portal-divider,
+.species-explorer .portal-hero-text,
 .species-explorer .portal-info-row,
+.species-explorer .scroll-cue-hero,
 .species-explorer .search-area-frame,
 .species-explorer .resource-strip-section {
   opacity: 0;
@@ -39,25 +64,95 @@ html {
 }
 
 .species-explorer .portal-top-row { animation-delay: 60ms; }
-.species-explorer .portal-main-row { animation-delay: 140ms; }
-.species-explorer .portal-divider { animation-delay: 220ms; }
-.species-explorer .portal-info-row { animation-delay: 300ms; }
+.species-explorer .portal-hero-text { animation-delay: 140ms; }
+.species-explorer .portal-info-row { animation-delay: 220ms; }
+.species-explorer .scroll-cue-hero { animation-delay: 900ms; }
 .species-explorer .search-area-frame { animation-delay: 380ms; }
 .species-explorer .resource-strip-section { animation-delay: 460ms; }
 
 .species-explorer .portal-header {
+  position: relative;
   width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
   margin: 0;
-  padding: 0.65rem 1.6rem 0.8rem;
+  padding: 0;
   box-sizing: border-box;
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
 .species-explorer .portal-top-row {
   display: grid;
-  grid-template-columns: 165px 1fr 165px;
+  grid-template-columns: 165px 165px;
+  justify-content: space-between;
   align-items: center;
   gap: 1.1rem;
+  padding: 40px 32px 0;
+  margin-bottom: 32px;
+}
+
+.species-explorer .scroll-cue {
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #4a6b3d;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.species-explorer .scroll-cue-arrow {
+  display: block;
+  width: 20px;
+  height: 11px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: scroll-cue-bounce 1.6s ease-in-out infinite;
+}
+
+.species-explorer .scroll-cue:hover,
+.species-explorer .scroll-cue:focus-visible {
+  color: #0c5b2c;
+}
+
+.species-explorer .scroll-cue-hero {
+  margin-top: 48px;
+}
+
+.species-explorer .scroll-cue-resources {
+  position: fixed;
+  bottom: 1.25rem;
+  z-index: 5;
+  flex-direction: row;
+  gap: 10px;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.species-explorer .scroll-cue-resources.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .species-explorer .portal-logo {
@@ -70,56 +165,59 @@ html {
   justify-self: end;
 }
 
-.species-explorer .portal-icon-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  flex-wrap: nowrap;
+.species-explorer .portal-hero {
+  --badge: 84px;
+  --rx: min(340px, 50vw - 60px);
+  --ry: clamp(158px, (100svh - 640px) / 2, 190px);
+  position: relative;
   width: 100%;
-  max-width: 1340px;
-  min-height: 72px;
+  height: calc(2 * var(--ry) + var(--badge));
+  margin: auto 0;
+  padding: 0 32px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+}
+
+.species-explorer .portal-icon-ring {
+  position: absolute;
+  inset: 0;
 }
 
 .species-explorer .portal-icon-badge {
-  width: 84px;
-  height: 84px;
-  flex: 0 0 84px;
+  --angle: calc(22.5deg + var(--i) * 45deg);
+  position: absolute;
+  left: calc(50% + cos(var(--angle)) * var(--rx));
+  top: calc(50% + sin(var(--angle)) * var(--ry));
+  width: var(--badge);
+  height: var(--badge);
+  margin: calc(var(--badge) / -2) 0 0 calc(var(--badge) / -2);
   border-radius: 50%;
   background: #f4f5f4;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  animation: badge-pop 600ms ease-out forwards;
+  animation-delay: calc(300ms + var(--i) * 70ms);
 }
 
 .species-explorer .portal-icon-badge img {
-  width: 44px;
-  height: 44px;
+  width: 52%;
+  height: 52%;
   object-fit: contain;
 }
 
-.species-explorer .portal-main-row {
-  margin: 0 auto;
-  width: min(951px, 100%);
-  max-width: 980px;
-  display: grid;
-  grid-template-columns: 1.03fr 1fr;
-  gap: 0;
-  padding-top: 14px;
-  padding-bottom: 14px;
-  padding-left: 0;
-  padding-right: 0;
-  overflow: hidden;
-  vertical-align: bottom;
-  align-items: end;
+.species-explorer .portal-hero-text {
+  position: relative;
+  max-width: 420px;
+  text-align: center;
 }
 
 .species-explorer .tennessee-script {
   margin: 0;
   font-family: "Biro Script", cursive;
-  font-size: 60px;
-  width: 559px;
-  padding-top: 36px;
+  font-size: 76px;
   line-height: 0.95;
   color: #323232;
 }
@@ -133,72 +231,54 @@ html {
 }
 
 .species-explorer .portal-main-description {
-  margin: 0;
+  margin: 0.9rem 0 0;
   font-size: 0.97rem;
   line-height: 1.45;
   color: #3f3f3f;
-  align-self: end;
 }
 
-.species-explorer .portal-divider {
-  width: 53%;
-  margin: 1.55rem auto 0.45rem;
-  border-bottom: 2px solid #a8c29c;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  vertical-align: middle;
+.species-explorer .portal-search-intro {
+  padding: 80px 32px 64px;
+  text-align: center;
 }
 
 .species-explorer .portal-info-row {
-  display: grid;
-  grid-template-columns: 140px repeat(3, minmax(0, 1fr));
-  padding: 49px 131px;
-  box-sizing: border-box;
-  column-gap: 2rem;
-  row-gap: 0;
-  align-items: start;
+  width: min(760px, 100%);
+  margin: 0 auto;
 }
 
-.species-explorer .portal-info-col h2 {
-  margin: 0 0 0.4rem;
-  font-size: 16px;
-  line-height: 1.1;
+.species-explorer .portal-info-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 40px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a6b3d;
+}
+
+.species-explorer .portal-info-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 48px;
+}
+
+.species-explorer .portal-info-col h3 {
+  margin: 0 0 16px;
+  font-size: 1.375rem;
+  line-height: 1.15;
   color: #1e1e1e;
-  font-weight: 600;
-  width: 100%;
-  max-width: 362px;
+  font-weight: 400;
 }
 
 .species-explorer .portal-info-col p {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.35;
-  color: #454545;
-}
-
-.species-explorer .portal-jump-link {
-  display: inline-block;
-  margin-left: 0.3rem;
-  color: inherit;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.species-explorer .portal-jump-link:hover,
-.species-explorer .portal-jump-link:focus-visible {
-  text-decoration: underline;
-}
-
-.species-explorer .portal-info-icon-col {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-.species-explorer .portal-search-icon {
-  font-size: 3.15rem;
-  line-height: 1;
-  color: #f0bc57;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: #3a3a3a;
 }
 
 
@@ -213,12 +293,12 @@ html {
 .species-explorer .search-area-frame {
   width: calc(100% - 2rem);
   max-width: 1120px;
-  margin: 1rem auto 0;
-  border: 1px solid #d4d9d2;
+  margin: 0 auto;
+  box-shadow: inset 0 0 0 1px #d4d9d2;
   border-radius: 10px;
   background: #ffffff;
   box-sizing: border-box;
-  padding: 0.35rem 0.4rem 0.8rem;
+  padding: 64px 32px 0.8rem;
 }
 
 .species-explorer .resource-strip-section.resources-standalone {
@@ -327,7 +407,7 @@ html {
   position: relative;
   width: 100%;
   max-width: 800px;
-  margin: 1rem auto;
+  margin: 0 auto;
   padding-top: 0;
 }
 
@@ -363,17 +443,18 @@ html {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 32px 1rem;
+  padding: 0;
   background-color: #ffffff;
 }
 
 .species-explorer .filter-controls-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 40px;
+  margin-top: 40px;
 }
 
 .species-explorer .filter-controls-row .filter-bar {
@@ -392,8 +473,8 @@ html {
 .species-explorer #search-tools {
   flex-direction: column;
   flex-wrap: nowrap;
-  align-items: flex-start;
-  gap: 0.55rem;
+  align-items: center;
+  gap: 16px;
   padding: 0;
 }
 
@@ -401,6 +482,7 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0;
   border: none;
   background: none;
   cursor: pointer;
@@ -422,7 +504,7 @@ html {
 }
 
 .species-explorer .filter-label {
-  margin-top: 0.5rem;
+  margin-top: 12px;
   font-size: 0.85rem;
   text-align: center;
   line-height: 1.1;
@@ -459,6 +541,10 @@ html {
   gap: 0.4rem;
 }
 
+.species-explorer #search-tools .endangered-filter input {
+  margin: 0;
+}
+
 .species-explorer #search-tools .endangered-filter label {
   display: block;
 }
@@ -475,12 +561,14 @@ html {
 .species-explorer .results-summary {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .species-explorer #resultsCount {
+  display: flex;
+  align-items: center;
   text-align: left;
   font-size: 0.85rem;
   color: #555;
@@ -501,7 +589,7 @@ html {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
-  padding: 0.75rem;
+  padding: 24px 0 0.75rem;
 }
 
 .species-explorer .species-card {
@@ -531,6 +619,10 @@ html {
   align-items: start;
   gap: 0.7rem;
   margin-bottom: 0.7rem;
+}
+
+.species-explorer .species-expand {
+  display: none;
 }
 
 .species-explorer .species-img {
@@ -698,9 +790,10 @@ html {
   }
 
   .species-explorer .portal-top-row,
-  .species-explorer .portal-main-row,
-  .species-explorer .portal-divider,
+  .species-explorer .portal-hero-text,
+  .species-explorer .portal-icon-badge,
   .species-explorer .portal-info-row,
+  .species-explorer .scroll-cue-hero,
   .species-explorer .search-area-frame,
   .species-explorer .resource-strip-section,
   .species-explorer .species-card,
@@ -709,105 +802,57 @@ html {
     opacity: 1 !important;
     transform: none !important;
   }
+
+  .species-explorer .scroll-cue-arrow {
+    animation: none;
+  }
+
+  .species-explorer .scroll-cue-resources {
+    transition: none;
+  }
 }
 
 @media (max-width: 1200px) {
-  .species-explorer .portal-header {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
   .species-explorer .portal-top-row {
-    grid-template-columns: 135px 1fr 135px;
-    gap: 0.75rem;
+    grid-template-columns: 135px 135px;
   }
 
-  .species-explorer .portal-icon-row {
-    gap: 0.35rem;
-  }
-
-  .species-explorer .portal-icon-badge {
-    width: 72px;
-    height: 72px;
-    flex: 0 0 72px;
-  }
-
-  .species-explorer .portal-icon-badge img {
-    width: 38px;
-    height: 38px;
-  }
-
-  .species-explorer .portal-main-row {
-    width: min(951px, 94%);
+  .species-explorer .portal-hero {
+    --badge: 72px;
   }
 
   .species-explorer .tennessee-script {
-    width: auto;
-    max-width: 100%;
-    font-size: clamp(2.6rem, 5.2vw, 3.35rem);
-    padding-top: 0.75rem;
+    font-size: clamp(3.25rem, 6.5vw, 4.25rem);
   }
 
   .species-explorer .portal-title {
     font-size: clamp(2rem, 4.3vw, 2.5rem);
   }
-
-  .species-explorer .portal-info-row {
-    grid-template-columns: 84px repeat(3, minmax(0, 1fr));
-    padding: 2rem 2rem;
-    column-gap: 1.25rem;
-  }
-
-  .species-explorer .portal-info-col h2 {
-    max-width: 100%;
-  }
-
 }
 
 @media (max-width: 900px) {
   .species-explorer .portal-top-row {
-    grid-template-columns: 120px 1fr 120px;
+    grid-template-columns: 120px 120px;
   }
 
-  .species-explorer .portal-main-row {
-    grid-template-columns: 1fr;
-    row-gap: 0.5rem;
-    padding-top: 0.8rem;
-    padding-bottom: 0.8rem;
+  .species-explorer .portal-hero {
+    --ry: clamp(158px, (100svh - 640px) / 2, 170px);
   }
 
-  .species-explorer .portal-main-title,
-  .species-explorer .portal-main-description {
-    text-align: center;
-  }
-
-  .species-explorer .portal-main-description {
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  .species-explorer .portal-info-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 1.4rem 1.2rem;
-    gap: 1rem;
-  }
-
-  .species-explorer .portal-info-icon-col {
-    grid-column: 1 / -1;
-    justify-content: center;
-  }
-
-  .species-explorer .portal-info-col h2 {
-    max-width: none;
-  }
-
-  .species-explorer .filter-controls-row {
-    flex-direction: column;
-    align-items: center;
+  .species-explorer .portal-hero-text {
+    max-width: 340px;
   }
 
   .species-explorer .filter-controls-row .filter-bar {
     width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .species-explorer .filter-btn {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .species-explorer #search-tools {
@@ -823,13 +868,10 @@ html {
 }
 
 @media (max-width: 600px) {
-  .species-explorer .portal-header {
-    padding: 0.65rem 0.75rem 1rem;
-  }
-
   .species-explorer .portal-top-row {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 32px 24px 0;
   }
 
   .species-explorer .portal-logo {
@@ -837,46 +879,61 @@ html {
     justify-self: center;
   }
 
-  .species-explorer .portal-icon-row {
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
+  .species-explorer .portal-hero {
+    height: auto;
+    padding: 0 24px;
   }
 
-  .species-explorer .portal-main-row {
-    margin-top: 1rem;
-    grid-template-columns: 1fr;
-    width: 100%;
-    row-gap: 0.4rem;
+  .species-explorer .portal-icon-ring {
+    display: none;
   }
 
   .species-explorer .tennessee-script {
-    font-size: 1.85rem;
+    font-size: 2.75rem;
   }
 
   .species-explorer .portal-title {
     font-size: 2.15rem;
   }
 
-  .species-explorer .portal-divider {
-    width: 92%;
-    margin-top: 1.2rem;
-    margin-bottom: 1rem;
+  .species-explorer .portal-search-intro {
+    padding: 48px 24px 40px;
   }
 
-  .species-explorer .portal-info-row {
-    grid-template-columns: 1fr;
-    padding: 1rem 0.75rem;
-    gap: 1rem;
+  .species-explorer .portal-info-title {
+    margin-bottom: 32px;
   }
 
-  .species-explorer .portal-info-icon-col {
-    grid-column: auto;
-    justify-content: flex-start;
+  .species-explorer .portal-info-cols {
+    column-gap: 24px;
   }
 
-  .species-explorer .portal-info-col h2 {
-    font-size: 1.3rem;
+  .species-explorer .portal-info-col {
+    text-align: left;
+  }
+
+  .species-explorer .portal-info-col h3 {
+    margin-bottom: 12px;
+    font-size: 1.125rem;
+  }
+
+  .species-explorer .portal-info-col p {
+    font-size: clamp(0.5rem, (100vw - 88px) * 0.039, 0.875rem);
+  }
+
+  .species-explorer .scroll-cue-hero {
+    margin-top: 40px;
+  }
+
+  .species-explorer .search-area-frame {
+    width: 100%;
+    padding: 40px 24px 0.8rem;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .species-explorer .filter-controls-row .filter-bar {
+    gap: 4px;
   }
 
   .species-explorer .resource-strip {
@@ -893,32 +950,89 @@ html {
   }
 
   .species-explorer .filter-label {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
+  }
+
+  .species-explorer .card-container {
+    gap: 8px;
   }
 
   .species-explorer .species-card {
-    width: 90%;
+    width: 100%;
+    padding: 10px 12px;
+    gap: 0;
+    border-radius: 10px;
   }
 
   .species-explorer .species-card-header {
-    grid-template-columns: 1fr 96px;
-    gap: 0.5rem;
+    grid-template-columns: 56px 1fr 20px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+
+  .species-explorer .species-img {
+    order: -1;
+    width: 56px;
+    height: 56px;
+    aspect-ratio: auto;
+    font-size: 0;
   }
 
   .species-explorer .species-name {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .species-explorer .species-scientific {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .species-explorer .species-group-fine {
-    font-size: 0.68rem;
+    display: none;
+  }
+
+  .species-explorer .species-meta-row {
+    margin-top: 6px;
+  }
+
+  .species-explorer .species-expand {
+    display: block;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .species-explorer .species-expand::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #4a6b3d;
+    border-bottom: 2px solid #4a6b3d;
+    transform: rotate(45deg);
+    transition: transform 200ms ease, top 200ms ease;
+  }
+
+  .species-explorer .species-card.is-open .species-expand::before {
+    top: 8px;
+    transform: rotate(-135deg);
   }
 
   .species-explorer .species-details {
+    display: none;
     gap: 0.4rem;
+    margin-top: 12px;
+  }
+
+  .species-explorer .species-card.is-open .species-details {
+    display: grid;
   }
 
   .species-explorer .controls-bar {
@@ -930,29 +1044,20 @@ html {
   }
 
   .species-explorer .filter-controls-row {
-    flex-direction: column;
     align-items: stretch;
-  }
-
-  .species-explorer .filter-controls-row .filter-bar {
-    justify-content: center;
-    padding-left: 0;
-  }
-
-  .species-explorer .results-summary {
-    flex-direction: column;
-    gap: 0.45rem;
+    gap: 32px;
+    margin-top: 32px;
   }
 
   .species-explorer #paginationControls {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 0.55rem;
+    gap: 12px;
   }
 
   .species-explorer #paginationControls button {
     margin: 0;
-    width: min(220px, 92%);
+    padding: 8px 14px;
   }
 }
