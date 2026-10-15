@@ -30,8 +30,8 @@
             <p class="tennessee-script">Tennessee</p>
             <h1 class="portal-title">Rare Species Explorer</h1>
             <p class="portal-main-description">
-              <strong>Biodiversity is a critical part of healthy forests</strong> - find G1 &amp; G2 species in
-              your area and support thriving ecosystems in Tennessee.
+              <strong>Biodiversity is a critical part of healthy forests.</strong> Find rare species in your area
+              and support thriving ecosystems in Tennessee.
             </p>
           </div>
         </div>
@@ -42,11 +42,17 @@
             <div class="portal-info-cols">
               <div class="portal-info-col">
                 <h3>County</h3>
-                <p>Select a county to filter. Hold down to select multiple.</p>
+                <p>
+                  <span class="copy-desktop">Select a county to filter. Hold down to select multiple.</span>
+                  <span class="copy-mobile">Tap “Select counties” to choose one or more counties.</span>
+                </p>
               </div>
               <div class="portal-info-col">
                 <h3>Taxonomy</h3>
-                <p>Choose a species group to narrow down your search.</p>
+                <p>
+                  <span class="copy-desktop">Choose a species group to narrow down your search.</span>
+                  <span class="copy-mobile">Tap a species group to filter results. Tap again to deselect.</span>
+                </p>
               </div>
             </div>
           </div>
@@ -58,24 +64,63 @@
         </div>
       </section>
 
+      <div class="county-sheet" id="countySheet">
+        <div class="county-sheet-backdrop" data-sheet-close></div>
+        <div class="county-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="countySheetTitle" tabindex="-1">
+          <div class="county-sheet-handle" aria-hidden="true"></div>
+          <div class="county-sheet-header">
+            <h2 id="countySheetTitle">Select counties</h2>
+            <button type="button" class="county-sheet-close" data-sheet-close aria-label="Close">
+              <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1l8 8M9 1l-8 8" /></svg>
+            </button>
+          </div>
+          <label class="county-sheet-search">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" /><path d="M13 13l5 5" /></svg>
+            <input type="search" id="countySearch" placeholder="Search counties..." aria-label="Search counties" />
+          </label>
+          <div class="county-sheet-meta">
+            <span id="countySelectedCount">0 selected</span>
+            <button type="button" id="countySheetClear">Clear</button>
+          </div>
+          <ul class="county-sheet-list" id="countyList"></ul>
+          <div class="county-sheet-footer">
+            <button type="button" id="countySheetApply">Show results</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-summary" id="resultsSummary">
+        <div id="resultsCount" aria-live="polite">Showing 0 species</div>
+        <button id="clearFiltersBtn" type="button">
+          Clear Filters
+          <svg class="clear-filters-x" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1l8 8M9 1l-8 8" /></svg>
+        </button>
+      </div>
+
       <section id="search-area" class="search-area-frame" aria-label="Species search area">
         <div id="map-container"></div>
         <div id="tooltip" class="county-tooltip"></div>
+        <div class="county-picker">
+          <p class="county-picker-hint">Choose one or more counties.</p>
+          <button type="button" class="county-picker-trigger" id="countyPickerTrigger" aria-haspopup="dialog" aria-controls="countySheet">
+            Select counties
+            <svg viewBox="0 0 20 11" aria-hidden="true"><path d="M1 1l9 9 9-9" /></svg>
+          </button>
+          <ul class="county-tags" id="countyTags" aria-label="Selected counties"></ul>
+        </div>
         <div class="filter-controls-row">
           <div class="filter-bar" id="filterBar"></div>
 
           <div class="controls-bar" id="search-tools">
             <input type="text" id="searchInput" placeholder="Search species..." />
             <div class="endangered-filter">
-              <input type="checkbox" id="endangeredOnly" />
-              <label for="endangeredOnly">Show only endangered species</label>
+              <input type="checkbox" id="endangeredOnly" role="switch" />
+              <label for="endangeredOnly">
+                Show endangered
+                <span class="toggle-switch" aria-hidden="true"></span>
+              </label>
             </div>
           </div>
-        </div>
-
-        <div class="results-summary">
-          <div id="resultsCount">Showing 0 species</div>
-          <button id="clearFiltersBtn">Clear Filters</button>
         </div>
 
         <div class="card-container" id="cardContainer"></div>
@@ -85,12 +130,12 @@
           <span id="pageIndicator"></span>
           <button id="nextPageBtn" type="button">Next</button>
         </div>
-      </section>
 
-      <a class="scroll-cue scroll-cue-resources" id="resourcesCue" href="#resources-section" aria-label="Scroll down to additional resources">
-        <span class="scroll-cue-label">Resources</span>
-        <svg class="scroll-cue-arrow" viewBox="0 0 20 11" aria-hidden="true"><path d="M1 1l9 9 9-9" /></svg>
-      </a>
+        <a class="resources-link" href="#resources-section">
+          Resources
+          <svg viewBox="0 0 20 11" aria-hidden="true"><path d="M1 1l9 9 9-9" /></svg>
+        </a>
+      </section>
 
       <section id="resources-section" class="resource-strip-section resources-standalone" aria-label="Additional biodiversity resources">
         <h2 class="resource-strip-title">Get more support on species in Tennessee</h2>

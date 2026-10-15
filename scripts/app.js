@@ -10,7 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const tooltip = document.getElementById("tooltip");
   const mapModeStatus = document.getElementById("mapModeStatus");
   const jsonURL = "assets/data/species_by_county.json";
-  const compactCardsQuery = window.matchMedia("(max-width: 600px)");
+  const resultsSummary = document.getElementById("resultsSummary");
   const resourcesCsvURL = "assets/data/biodiversity_tools_descriptions.csv";
 
   const icons = {
@@ -41,10 +41,11 @@ window.addEventListener("DOMContentLoaded", () => {
   let allSpeciesData = [];
   let allCards = [];
   let currentPage = 1;
-  const cardsPerPage = 9;
+  const cardsPerPage = 12;
   const inatPhotoCache = new Map();
   const holdToMultiMs = 500;
   let multiSelectMode = false;
+  const countyNames = new Set();
 
   function updateMapModeStatus() {
     if (!mapModeStatus) return;
@@ -213,6 +214,34 @@ window.addEventListener("DOMContentLoaded", () => {
       .forEach((el) => el.classList.remove("selected"));
   }
 
+  function syncMapSelection() {
+    document.querySelectorAll(".svg-county").forEach((el) => {
+      el.classList.toggle("selected", selectedCounties.has(el.dataset.county));
+    });
+  }
+
+  function renderCountyTags() {
+    const tagList = document.getElementById("countyTags");
+    tagList.replaceChildren();
+    [...selectedCounties].sort().forEach((county) => {
+      const item = document.createElement("li");
+      const tag = document.createElement("button");
+      tag.type = "button";
+      tag.className = "county-tag";
+      tag.setAttribute("aria-label", `Remove ${county}`);
+      tag.innerHTML =
+        '<span></span><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1l8 8M9 1l-8 8" /></svg>';
+      tag.querySelector("span").textContent = county;
+      tag.addEventListener("click", () => {
+        selectedCounties.delete(county);
+        syncMapSelection();
+        renderCards(allSpeciesData);
+      });
+      item.appendChild(tag);
+      tagList.appendChild(item);
+    });
+  }
+
   function renderPage() {
     const totalPages = Math.max(1, Math.ceil(allCards.length / cardsPerPage));
     if (currentPage > totalPages) currentPage = totalPages;
@@ -221,7 +250,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const end = start + cardsPerPage;
 
     allCards.forEach((card, index) => {
-      card.style.display = index >= start && index < end ? "block" : "none";
+      card.style.display = index >= start && index < end ? "" : "none";
     });
 
     const pageIndicator = document.getElementById("pageIndicator");
@@ -332,6 +361,13 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("resultsCount").textContent = `Showing ${filtered.length} species`;
+    const hasActiveFilters =
+      selectedGroups.size > 0 ||
+      selectedCounties.size > 0 ||
+      searchQuery.trim() !== "" ||
+      endangeredCheckbox.checked;
+    resultsSummary.classList.toggle("has-filters", hasActiveFilters);
+    renderCountyTags();
 
     filtered.forEach((species) => {
       const card = document.createElement("div");
@@ -374,10 +410,10 @@ window.addEventListener("DOMContentLoaded", () => {
       const metaRow = document.createElement("div");
       metaRow.className = "species-meta-row";
       if (rank) {
-        const rankPill = document.createElement("span");
-        rankPill.className = "meta-pill meta-pill-rank";
-        rankPill.textContent = `Global Rank ${rank}`;
-        metaRow.appendChild(rankPill);
+        const rankText = document.createElement("span");
+        rankText.className = "species-rank";
+        rankText.textContent = `Global Rank ${rank}`;
+        metaRow.appendChild(rankText);
       }
       if (status) {
         const statusPill = document.createElement("span");
@@ -407,7 +443,6 @@ window.addEventListener("DOMContentLoaded", () => {
       header.appendChild(expandBtn);
 
       header.addEventListener("click", () => {
-        if (!compactCardsQuery.matches) return;
         const open = card.classList.toggle("is-open");
         expandBtn.setAttribute("aria-expanded", String(open));
       });
@@ -485,9 +520,14 @@ window.addEventListener("DOMContentLoaded", () => {
         btn.setAttribute("data-group", group);
         btn.innerHTML = `
           <img src="${icons[group] || "assets/icons/mammals.svg"}" alt="${group}" />
-          <div class="filter-label">${group.includes("&") ? group.replace(" & ", "<br>& ") : group}</div>
+          <span class="filter-label" aria-hidden="true">${group}</span>
         `;
         if (selectedGroups.has(group)) btn.classList.add("active");
+
+        btn.addEventListener("pointerenter", (event) => {
+          if (event.pointerType === "mouse") btn.classList.add("is-hovered");
+        });
+        btn.addEventListener("pointerleave", () => btn.classList.remove("is-hovered"));
 
         btn.addEventListener("click", () => {
           const selectedGroup = btn.getAttribute("data-group");
@@ -510,6 +550,103 @@ window.addEventListener("DOMContentLoaded", () => {
   updateMapModeStatus();
 
   document.getElementById("clearFiltersBtn").addEventListener("click", clearAllFilters);
+
+  const countySheet = document.getElementById("countySheet");
+  const countySheetPanel = countySheet.querySelector(".county-sheet-panel");
+  const countyPickerTrigger = document.getElementById("countyPickerTrigger");
+  const countySearch = document.getElementById("countySearch");
+  const countyList = document.getElementById("countyList");
+  const countySelectedCount = document.getElementById("countySelectedCount");
+  const pendingCounties = new Set();
+
+  function updatePendingCount() {
+    countySelectedCount.textContent = `${pendingCounties.size} selected`;
+  }
+
+  function buildCountyRow(county) {
+    const item = document.createElement("li");
+    const label = document.createElement("label");
+    label.className = "county-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = county;
+    checkbox.checked = pendingCounties.has(county);
+    checkbox.addEventListener("change", () => {
+      checkbox.checked ? pendingCounties.add(county) : pendingCounties.delete(county);
+      updatePendingCount();
+    });
+    const name = document.createElement("span");
+    name.textContent = county;
+    label.append(checkbox, name);
+    item.appendChild(label);
+    item.dataset.county = county.toLowerCase();
+    return item;
+  }
+
+  function renderCountyList() {
+    const sorted = [...countyNames].sort();
+    const selected = sorted.filter((county) => pendingCounties.has(county));
+    const rest = sorted.filter((county) => !pendingCounties.has(county));
+    countyList.replaceChildren(...selected.map(buildCountyRow));
+    if (selected.length > 0 && rest.length > 0) {
+      const divider = document.createElement("li");
+      divider.className = "county-divider";
+      divider.setAttribute("aria-hidden", "true");
+      countyList.appendChild(divider);
+    }
+    countyList.append(...rest.map(buildCountyRow));
+    updatePendingCount();
+  }
+
+  function filterCountyList() {
+    const query = countySearch.value.trim().toLowerCase();
+    countyList.querySelectorAll("li").forEach((item) => {
+      item.hidden = item.classList.contains("county-divider")
+        ? query !== ""
+        : !item.dataset.county.includes(query);
+    });
+  }
+
+  function openCountySheet() {
+    pendingCounties.clear();
+    selectedCounties.forEach((county) => pendingCounties.add(county));
+    countySearch.value = "";
+    renderCountyList();
+    countyList.scrollTop = 0;
+    countySheet.classList.add("is-open");
+    document.body.classList.add("sheet-open");
+    countySheetPanel.focus();
+  }
+
+  function closeCountySheet() {
+    countySheet.classList.remove("is-open");
+    document.body.classList.remove("sheet-open");
+    countyPickerTrigger.focus();
+  }
+
+  countyPickerTrigger.addEventListener("click", openCountySheet);
+  countySheet.querySelectorAll("[data-sheet-close]").forEach((el) => {
+    el.addEventListener("click", closeCountySheet);
+  });
+  countySheet.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeCountySheet();
+  });
+  countySearch.addEventListener("input", filterCountyList);
+  document.getElementById("countySheetClear").addEventListener("click", () => {
+    pendingCounties.clear();
+    countyList.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+    updatePendingCount();
+  });
+  document.getElementById("countySheetApply").addEventListener("click", () => {
+    selectedCounties.clear();
+    pendingCounties.forEach((county) => selectedCounties.add(county));
+    syncMapSelection();
+    currentPage = 1;
+    renderCards(allSpeciesData);
+    closeCountySheet();
+  });
 
   searchInput.addEventListener("input", () => {
     currentPage = 1;
@@ -539,9 +676,11 @@ window.addEventListener("DOMContentLoaded", () => {
   fetch("assets/map/tennessee-county-map.svg")
     .then((res) => res.text())
     .then((svgText) => {
-      document.getElementById("map-container").innerHTML = svgText;
-      const svg = document.querySelector("#map-container svg");
+      const mapContainer = document.getElementById("map-container");
+      mapContainer.innerHTML = svgText;
+      const svg = mapContainer.querySelector("svg");
       if (!svg) return;
+      mapContainer.appendChild(tooltip);
 
       svg.querySelectorAll("path").forEach((el) => {
         const name = el.getAttribute("id") || el.getAttribute("data-name");
@@ -550,16 +689,13 @@ window.addEventListener("DOMContentLoaded", () => {
         let longPressTriggered = false;
 
         el.classList.add("svg-county");
+        el.dataset.county = name;
+        countyNames.add(name);
         if (selectedCounties.has(name)) el.classList.add("selected");
 
         el.addEventListener("mouseover", () => {
           tooltip.style.display = "block";
           tooltip.textContent = name;
-        });
-
-        el.addEventListener("mousemove", (event) => {
-          tooltip.style.left = `${event.clientX + 12}px`;
-          tooltip.style.top = `${event.clientY + 12}px`;
         });
 
         el.addEventListener("mouseout", () => {
@@ -617,27 +753,44 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
-  const resourcesCue = document.getElementById("resourcesCue");
+  const hero = document.querySelector(".portal-hero");
   const portal = document.getElementById("search-area");
-  const resources = document.getElementById("resources-section");
-  if (!resourcesCue || !portal || !resources) return;
+  const resultsSummary = document.getElementById("resultsSummary");
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (!hero || !portal || !resultsSummary) return;
 
   let frameQueued = false;
-  const updateResourcesCue = () => {
+  const updateHeroOrbit = () => {
+    if (reducedMotionQuery.matches) {
+      hero.style.removeProperty("--orbit-progress");
+      return;
+    }
+    const heroBottom = hero.offsetTop + hero.offsetHeight;
+    const linear = Math.min(Math.max(window.scrollY / heroBottom, 0), 1);
+    const eased = linear * linear * (3 - 2 * linear);
+    hero.style.setProperty("--orbit-progress", eased.toFixed(4));
+  };
+
+  const updateResultsSummary = () => {
+    const portalRect = portal.getBoundingClientRect();
+    const inPortal = portalRect.top < window.innerHeight * 0.5 && portalRect.bottom > 0;
+    resultsSummary.classList.toggle("in-portal", inPortal);
+  };
+
+  const update = () => {
     frameQueued = false;
-    const viewportHeight = window.innerHeight;
-    const inPortal = portal.getBoundingClientRect().top < viewportHeight * 0.5;
-    const resourcesInView = resources.getBoundingClientRect().top < viewportHeight;
-    resourcesCue.classList.toggle("is-visible", inPortal && !resourcesInView);
+    updateHeroOrbit();
+    updateResultsSummary();
   };
 
   const queueUpdate = () => {
     if (frameQueued) return;
     frameQueued = true;
-    requestAnimationFrame(updateResourcesCue);
+    requestAnimationFrame(update);
   };
 
   window.addEventListener("scroll", queueUpdate, { passive: true });
   window.addEventListener("resize", queueUpdate);
-  updateResourcesCue();
+  reducedMotionQuery.addEventListener("change", queueUpdate);
+  update();
 });
