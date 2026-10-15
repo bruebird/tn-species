@@ -760,15 +760,36 @@ window.addEventListener("DOMContentLoaded", () => {
   if (!hero || !portal || !resultsSummary) return;
 
   let frameQueued = false;
+  const spring = { stiffness: 140, damping: 15, value: 0, velocity: 0, target: 0, last: 0, running: false };
+
+  const stepSpring = (now) => {
+    const dt = Math.min((now - spring.last) / 1000, 1 / 30);
+    spring.last = now;
+    const force = spring.stiffness * (spring.target - spring.value) - spring.damping * spring.velocity;
+    spring.velocity += force * dt;
+    spring.value += spring.velocity * dt;
+    const settled =
+      Math.abs(spring.target - spring.value) < 0.0005 && Math.abs(spring.velocity) < 0.0005;
+    if (settled) spring.value = spring.target;
+    hero.style.setProperty("--orbit-progress", spring.value.toFixed(4));
+    spring.running = !settled;
+    if (spring.running) requestAnimationFrame(stepSpring);
+  };
+
   const updateHeroOrbit = () => {
     if (reducedMotionQuery.matches) {
+      spring.running = false;
       hero.style.removeProperty("--orbit-progress");
       return;
     }
     const heroBottom = hero.offsetTop + hero.offsetHeight;
     const linear = Math.min(Math.max(window.scrollY / heroBottom, 0), 1);
-    const eased = linear * linear * (3 - 2 * linear);
-    hero.style.setProperty("--orbit-progress", eased.toFixed(4));
+    spring.target = linear * linear * (3 - 2 * linear);
+    if (!spring.running) {
+      spring.running = true;
+      spring.last = performance.now();
+      requestAnimationFrame(stepSpring);
+    }
   };
 
   const updateResultsSummary = () => {

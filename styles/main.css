@@ -11,6 +11,18 @@
   initial-value: 0;
 }
 
+@property --orbit-spin {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes orbit-spin {
+  to {
+    --orbit-spin: 360deg;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -1280,7 +1292,8 @@ body.sheet-open {
     transform: none !important;
   }
 
-  .species-explorer .scroll-cue-arrow {
+  .species-explorer .scroll-cue-arrow,
+  .species-explorer .portal-icon-ring {
     animation: none;
   }
 
@@ -1358,12 +1371,24 @@ body.sheet-open {
   }
 
   .species-explorer .portal-hero {
-    height: auto;
+    --badge: 76px;
+    --rx: calc(50vw + 70px);
+    --ry: 180px;
     padding: 0 24px;
+    overflow-x: clip;
   }
 
   .species-explorer .portal-icon-ring {
-    display: none;
+    animation: orbit-spin 120s linear infinite;
+  }
+
+  .species-explorer .portal-icon-badge {
+    --angle: calc(22.5deg + var(--i) * 45deg + var(--orbit-spin) + var(--orbit-progress, 0) * 60deg);
+  }
+
+  .species-explorer .portal-hero-text {
+    max-width: 300px;
+    z-index: 1;
   }
 
   .species-explorer .tennessee-script {
