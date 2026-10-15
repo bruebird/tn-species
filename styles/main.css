@@ -103,7 +103,7 @@ body {
 
 .species-explorer .portal-top-row {
   display: grid;
-  grid-template-columns: 165px 165px;
+  grid-template-columns: 124px 124px;
   justify-content: space-between;
   align-items: center;
   gap: 1.1rem;
@@ -152,13 +152,30 @@ body {
 }
 
 .species-explorer .portal-logo {
+  display: block;
   width: 100%;
-  max-height: 72px;
+  max-height: 54px;
   object-fit: contain;
 }
 
 .species-explorer .portal-logo-right {
   justify-self: end;
+}
+
+.species-explorer .portal-logo-link {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.species-explorer .portal-logo-link:hover {
+  opacity: 0.8;
+}
+
+.species-explorer .portal-logo-link:focus-visible {
+  outline: 2px solid #2e6b3a;
+  outline-offset: 4px;
 }
 
 .species-explorer .portal-hero {
@@ -1309,7 +1326,7 @@ body.sheet-open {
 
 @media (max-width: 1200px) {
   .species-explorer .portal-top-row {
-    grid-template-columns: 135px 135px;
+    grid-template-columns: 110px 110px;
   }
 
   .species-explorer .portal-hero {
@@ -1327,7 +1344,7 @@ body.sheet-open {
 
 @media (max-width: 900px) {
   .species-explorer .portal-top-row {
-    grid-template-columns: 120px 120px;
+    grid-template-columns: 100px 100px;
   }
 
   .species-explorer .portal-hero {
@@ -1365,8 +1382,9 @@ body.sheet-open {
     padding: 32px 24px 0;
   }
 
-  .species-explorer .portal-logo {
-    max-width: 150px;
+  .species-explorer .portal-logo-left,
+  .species-explorer .portal-logo-link {
+    max-width: 110px;
     justify-self: center;
   }
 
